@@ -1,0 +1,14 @@
+fastapi>=0.68.0
+pydantic>=1.8.0
+uvicorn>=0.15.0
+sqlalchemy
+wheel
+pymysql
+#for template
+jinja2
+#for static files
+aiofiles
+#for loading environment variables  #new
+python-dotenv
+mysqlclient
+cryptography
