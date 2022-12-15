@@ -4,6 +4,9 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import inspect
 from sqlalchemy.sql import select,text
+import json
+from fastapi.encoders import jsonable_encoder
+
 
 
 app = FastAPI()
@@ -77,13 +80,47 @@ def read_root():
     ).subquery()
 
 
-    final_query = session.query(q).outerjoin(
-         q1,q1.columns.ai_resource_idai_resource == q.columns.title_1
-    ).outerjoin(
-        q2,q2.columns.ai_resource_idai_resource == q.columns.title_1
-    ).outerjoin(
-        q3,q3.columns.ai_resource_idai_resource == q.columns.title_1
-    ).outerjoin(
-        q4,q4.columns.ai_resource_idai_resource == q.columns.title_1).all()
 
-    return {"message": "OK"}
+    final_query = session.query(
+                        ai_resource.c.title,
+                        ai_resource.c.description,
+                        q1.c.title,
+                        q2.c.title,
+                        q3.c.full_name,
+                        q3.c.email,
+                        q4.c.title,
+                        q4.c.description,
+                        q4.c.website
+    
+                    ).join(
+                        resource_type,resource_type.columns.idresource_type == ai_resource.columns.resource_type_id
+                    ).outerjoin(
+                        q1,q1.columns.ai_resource_idai_resource == ai_resource.columns.idai_resource
+                    ).outerjoin(
+                        q2,q2.columns.ai_resource_idai_resource == ai_resource.columns.idai_resource
+                    ).outerjoin(
+                        q3,q3.columns.ai_resource_idai_resource == ai_resource.columns.idai_resource
+                    ).outerjoin(
+                        q4,q4.columns.ai_resource_idai_resource == ai_resource.columns.idai_resource)
+    
+    query_results = final_query.all()
+    results = [] 
+    
+    for result in query_results:
+        results_as_dict = {}
+        results_as_dict["resource_title"] = result[0]
+        results_as_dict["resource_description"] = result[1]
+        results_as_dict["resource_research_area"] = result[2]
+        results_as_dict["resource_application_area"] = result[3]
+        results_as_dict["contact_person_full_name"] = result[4]
+        results_as_dict["contact_person_email"] = result[5]
+        results_as_dict["organisation_title"] = result[6]
+        results_as_dict["organisation_description"] = result[7]
+        results_as_dict["organisation_website"] = result[8]
+        
+        
+        results.append(results_as_dict)
+    json_results = jsonable_encoder(results)
+    # json_results = json.dumps(results, indent=2)
+    
+    return json_results
